@@ -1,0 +1,65 @@
+import random
+
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
+def is_prime(num):
+    if num <= 1:
+        return False
+    for i in range(2, int(num ** 0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
+
+def generate_prime_candidate(start=100, end=300):
+    while True:
+
+        num = random.randint(start, end)
+        if is_prime(num):
+            return num
+
+def mod_inverse(e, phi):
+    def extended_gcd(a, b):
+        if a == 0:
+            return (b, 0, 1)
+        gcd, x1, y1 = extended_gcd(b % a, a)
+        x = y1 - (b // a) * x1
+        y = x1
+        return (gcd, x, y)
+    gcd, x, y = extended_gcd(e, phi)
+    return x % phi
+
+def rsa_key_generation():
+    p = generate_prime_candidate()
+    q = generate_prime_candidate()
+    while q == p:
+        q = generate_prime_candidate()
+    n = p * q
+    phi = (p - 1) * (q - 1)
+    e = random.randrange(2, phi)
+    while gcd(e, phi) != 1:
+        e = random.randrange(2, phi)
+    d = mod_inverse(e, phi)
+    return ((e, n), (d, n))
+
+def encrypt(public_key, plaintext):
+    e, n = public_key
+    cipher = [(ord(char) ** e) % n for char in plaintext]
+    return cipher
+
+def decrypt(private_key, ciphertext):
+    d, n = private_key
+    plain = [chr((char ** d) % n) for char in ciphertext]
+    return ''.join(plain)
+
+# Main
+public, private = rsa_key_generation()
+message = "HELLO"
+cipher = encrypt(public, message)
+print("Encrypted Message:", cipher)
+
+decrypted_message = decrypt(private, cipher)
+print("Decrypted Message:", decrypted_message)
+
